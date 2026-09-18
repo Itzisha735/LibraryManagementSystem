@@ -1,6 +1,9 @@
 package com.library.model;
 
-public class Book {
+import com.library.interfaces.Borrowable;
+import com.library.interfaces.Searchable;
+
+public class Book implements Borrowable, Searchable {
 
     private int bookId;
     private String title;
@@ -30,12 +33,20 @@ public class Book {
         return available;
     }
 
+    @Override
     public void borrowBook() {
         available = false;
     }
 
+    @Override
     public void returnBook() {
         available = true;
+    }
+
+    @Override
+    public boolean searchBook(String keyword) {
+        return title.toLowerCase().contains(keyword.toLowerCase())
+                || author.toLowerCase().contains(keyword.toLowerCase());
     }
 
     public void displayBookDetails() {

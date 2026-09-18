@@ -1,5 +1,7 @@
 package com.library;
 
+import com.library.interfaces.Borrowable;
+import com.library.interfaces.Searchable;
 import com.library.model.Admin;
 import com.library.model.Book;
 import com.library.model.Student;
@@ -47,5 +49,23 @@ public class Main {
         System.out.println("\n===== RETURNING BOOK =====");
         book.returnBook();
         System.out.println("Book available: " + book.isAvailable());
+
+        System.out.println("\n===== POLYMORPHISM =====");
+
+        // Using Book object through Borrowable interface
+        Borrowable borrowableBook = book;
+        borrowableBook.borrowBook();
+
+        System.out.println("Book borrowed using Borrowable interface.");
+        System.out.println("Book available: " + book.isAvailable());
+
+        // Using Book object through Searchable interface
+        Searchable searchableBook = book;
+
+        if (searchableBook.searchBook("Java")) {
+            System.out.println("Book found using Searchable interface.");
+        } else {
+            System.out.println("Book not found.");
+        }
     }
 }
