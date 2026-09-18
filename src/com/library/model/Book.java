@@ -1,5 +1,6 @@
 package com.library.model;
 
+import com.library.exceptions.BookNotAvailableException;
 import com.library.interfaces.Borrowable;
 import com.library.interfaces.Searchable;
 
@@ -34,7 +35,14 @@ public class Book implements Borrowable, Searchable {
     }
 
     @Override
-    public void borrowBook() {
+    public void borrowBook() throws BookNotAvailableException {
+
+        if (!available) {
+            throw new BookNotAvailableException(
+                    "Book is already borrowed: " + title
+            );
+        }
+
         available = false;
     }
 

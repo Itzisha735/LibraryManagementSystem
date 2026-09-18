@@ -1,5 +1,6 @@
 package com.library;
 
+import com.library.exceptions.BookNotAvailableException;
 import com.library.interfaces.Borrowable;
 import com.library.interfaces.Searchable;
 import com.library.model.Admin;
@@ -43,23 +44,45 @@ public class Main {
         admin.displayAdminDetails();
 
         System.out.println("\n===== BORROWING BOOK =====");
-        book.borrowBook();
-        System.out.println("Book available: " + book.isAvailable());
+
+        try {
+            book.borrowBook();
+            System.out.println("Book borrowed successfully.");
+            System.out.println("Book available: " + book.isAvailable());
+
+        } catch (BookNotAvailableException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        System.out.println("\n===== TRYING TO BORROW AGAIN =====");
+
+        try {
+            book.borrowBook();
+            System.out.println("Book borrowed successfully.");
+
+        } catch (BookNotAvailableException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
 
         System.out.println("\n===== RETURNING BOOK =====");
+
         book.returnBook();
+        System.out.println("Book returned successfully.");
         System.out.println("Book available: " + book.isAvailable());
 
         System.out.println("\n===== POLYMORPHISM =====");
 
-        // Using Book object through Borrowable interface
-        Borrowable borrowableBook = book;
-        borrowableBook.borrowBook();
+        try {
+            Borrowable borrowableBook = book;
+            borrowableBook.borrowBook();
 
-        System.out.println("Book borrowed using Borrowable interface.");
-        System.out.println("Book available: " + book.isAvailable());
+            System.out.println("Book borrowed using Borrowable interface.");
+            System.out.println("Book available: " + book.isAvailable());
 
-        // Using Book object through Searchable interface
+        } catch (BookNotAvailableException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
         Searchable searchableBook = book;
 
         if (searchableBook.searchBook("Java")) {
