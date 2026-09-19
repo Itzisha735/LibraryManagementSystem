@@ -122,5 +122,12 @@ public class Main {
 
         // Searching books using ArrayList
         library.searchBooks("Data");
+
+        // Stream API
+        System.out.println("\n===== STREAM API =====");
+
+        library.streamSearchBooks("Java");
+
+        library.displayAvailableBooks();
     }
 }

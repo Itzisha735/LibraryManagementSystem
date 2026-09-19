@@ -45,4 +45,30 @@ public class Library {
             System.out.println("No books found.");
         }
     }
+
+    // Using Stream API to search books
+    public void streamSearchBooks(String keyword) {
+
+        System.out.println("\n===== STREAM SEARCH =====");
+
+        books.stream()
+                .filter(book -> book.searchBook(keyword))
+                .forEach(book -> {
+                    book.displayBookDetails();
+                    System.out.println("--------------------");
+                });
+    }
+
+    // Using Stream API to display available books
+    public void displayAvailableBooks() {
+
+        System.out.println("\n===== AVAILABLE BOOKS =====");
+
+        books.stream()
+                .filter(Book::isAvailable)
+                .forEach(book -> {
+                    book.displayBookDetails();
+                    System.out.println("--------------------");
+                });
+    }
 }
