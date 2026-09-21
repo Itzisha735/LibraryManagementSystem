@@ -7,11 +7,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookDAO {
 
     public void addBook(Book book) {
-
         String sql = "INSERT INTO books (book_id, title, author, available) "
                    + "VALUES (?, ?, ?, ?)";
 
@@ -19,7 +20,6 @@ public class BookDAO {
             Connection connection = DatabaseConnection.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
-
             statement.setInt(1, book.getBookId());
             statement.setString(2, book.getTitle());
             statement.setString(3, book.getAuthor());
@@ -30,13 +30,14 @@ public class BookDAO {
             System.out.println("Book added to database successfully.");
 
         } catch (SQLException e) {
-
             System.out.println("Failed to add book to database.");
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    public void viewAllBooks() {
+    public List<Book> getAllBooks() {
+
+        List<Book> books = new ArrayList<>();
 
         String sql = "SELECT * FROM books";
 
@@ -46,26 +47,45 @@ public class BookDAO {
             ResultSet resultSet = statement.executeQuery()
         ) {
 
-            System.out.println("\n===== BOOKS FROM DATABASE =====");
-
             while (resultSet.next()) {
 
                 int bookId = resultSet.getInt("book_id");
                 String title = resultSet.getString("title");
                 String author = resultSet.getString("author");
-                boolean available = resultSet.getBoolean("available");
 
-                System.out.println("Book ID: " + bookId);
-                System.out.println("Title: " + title);
-                System.out.println("Author: " + author);
-                System.out.println("Available: " + available);
-                System.out.println("--------------------");
+                Book book = new Book(bookId, title, author);
+
+                if (!resultSet.getBoolean("available")) {
+                    book.borrowBook();
+                }
+
+                books.add(book);
             }
 
         } catch (SQLException e) {
 
             System.out.println("Failed to retrieve books.");
             System.out.println("Error: " + e.getMessage());
+        } catch (Exception e) {
+
+            System.out.println("Error while loading books.");
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        return books;
+    }
+
+    public void viewAllBooks() {
+
+        List<Book> books = getAllBooks();
+
+        System.out.println("\n===== BOOKS FROM DATABASE =====");
+
+        for (Book book : books) {
+
+            book.displayBookDetails();
+
+            System.out.println("--------------------");
         }
     }
 
@@ -117,6 +137,7 @@ public class BookDAO {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
     public void deleteBook(int bookId) {
 
         String sql = "DELETE FROM books WHERE book_id = ?";
