@@ -28,7 +28,15 @@ public class BookServlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        List<Book> books = bookDAO.getAllBooks();
+        String keyword = request.getParameter("keyword");
+
+        List<Book> books;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            books = bookDAO.searchBooksForWeb(keyword.trim());
+        } else {
+            books = bookDAO.getAllBooks();
+        }
 
         out.println("<html>");
         out.println("<head>");
@@ -64,6 +72,30 @@ public class BookServlet extends HttpServlet {
         out.println("</form>");
 
         // =========================
+        // SEARCH BOOKS
+        // =========================
+
+        out.println("<h2>Search Books</h2>");
+
+        out.println("<form method='get' action='books'>");
+
+        out.println("Keyword: ");
+        out.println("<input type='text' name='keyword' required>");
+
+        out.println("<input type='submit' value='Search'>");
+
+        out.println("</form>");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+
+            out.println("<p>Search results for: <strong>"
+                    + keyword
+                    + "</strong></p>");
+
+            out.println("<p><a href='books'>Show All Books</a></p>");
+        }
+
+        // =========================
         // BOOK LIST
         // =========================
 
@@ -94,8 +126,45 @@ public class BookServlet extends HttpServlet {
                 out.println("<td>" + book.getAuthor() + "</td>");
                 out.println("<td>" + book.isAvailable() + "</td>");
 
-                // Delete button
+                // =========================
+                // ACTION BUTTONS
+                // =========================
+
                 out.println("<td>");
+
+                // Borrow / Return button
+                out.println("<form method='post' action='books'>");
+
+                out.println(
+                    "<input type='hidden' name='bookId' value='"
+                    + book.getBookId()
+                    + "'>"
+                );
+
+                if (book.isAvailable()) {
+
+                    out.println(
+                        "<input type='hidden' name='action' value='borrow'>"
+                    );
+
+                    out.println(
+                        "<input type='submit' value='Borrow'>"
+                    );
+
+                } else {
+
+                    out.println(
+                        "<input type='hidden' name='action' value='return'>"
+                    );
+
+                    out.println(
+                        "<input type='submit' value='Return'>"
+                    );
+                }
+
+                out.println("</form>");
+
+                // Delete button
                 out.println("<form method='post' action='books'>");
 
                 out.println(
@@ -108,9 +177,12 @@ public class BookServlet extends HttpServlet {
                     + "'>"
                 );
 
-                out.println("<input type='submit' value='Delete'>");
+                out.println(
+                    "<input type='submit' value='Delete'>"
+                );
 
                 out.println("</form>");
+
                 out.println("</td>");
 
                 out.println("</tr>");
@@ -130,6 +202,40 @@ public class BookServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
+
+        // =========================
+        // BORROW BOOK
+        // =========================
+
+        if ("borrow".equals(action)) {
+
+            int bookId = Integer.parseInt(
+                    request.getParameter("bookId")
+            );
+
+            bookDAO.borrowBook(bookId);
+
+            response.sendRedirect("books");
+
+            return;
+        }
+
+        // =========================
+        // RETURN BOOK
+        // =========================
+
+        if ("return".equals(action)) {
+
+            int bookId = Integer.parseInt(
+                    request.getParameter("bookId")
+            );
+
+            bookDAO.returnBook(bookId);
+
+            response.sendRedirect("books");
+
+            return;
+        }
 
         // =========================
         // DELETE BOOK

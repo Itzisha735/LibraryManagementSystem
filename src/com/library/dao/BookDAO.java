@@ -66,6 +66,7 @@ public class BookDAO {
 
             System.out.println("Failed to retrieve books.");
             System.out.println("Error: " + e.getMessage());
+
         } catch (Exception e) {
 
             System.out.println("Error while loading books.");
@@ -137,6 +138,133 @@ public class BookDAO {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    // =========================
+    // SEARCH BOOKS FOR WEB
+    // =========================
+
+    public List<Book> searchBooksForWeb(String keyword) {
+
+        List<Book> books = new ArrayList<>();
+
+        String sql = "SELECT * FROM books "
+                   + "WHERE title LIKE ? OR author LIKE ?";
+
+        try (
+            Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            String searchKeyword = "%" + keyword + "%";
+
+            statement.setString(1, searchKeyword);
+            statement.setString(2, searchKeyword);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    int bookId = resultSet.getInt("book_id");
+                    String title = resultSet.getString("title");
+                    String author = resultSet.getString("author");
+
+                    Book book = new Book(bookId, title, author);
+
+                    if (!resultSet.getBoolean("available")) {
+                        book.borrowBook();
+                    }
+
+                    books.add(book);
+                }
+            }
+
+        } catch (SQLException e) {
+
+            System.out.println("Failed to search books.");
+            System.out.println("Error: " + e.getMessage());
+
+        } catch (Exception e) {
+
+            System.out.println("Error while searching books.");
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        return books;
+    }
+
+    // =========================
+    // BORROW BOOK
+    // =========================
+
+    public boolean borrowBook(int bookId) {
+
+        String sql = "UPDATE books "
+                   + "SET available = false "
+                   + "WHERE book_id = ? AND available = true";
+
+        try (
+            Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, bookId);
+
+            int rowsUpdated = statement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Book borrowed successfully.");
+                return true;
+            }
+
+            System.out.println("Book is already borrowed or does not exist.");
+            return false;
+
+        } catch (SQLException e) {
+
+            System.out.println("Failed to borrow book.");
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // =========================
+    // RETURN BOOK
+    // =========================
+
+    public boolean returnBook(int bookId) {
+
+        String sql = "UPDATE books "
+                   + "SET available = true "
+                   + "WHERE book_id = ? AND available = false";
+
+        try (
+            Connection connection = DatabaseConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
+            statement.setInt(1, bookId);
+
+            int rowsUpdated = statement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Book returned successfully.");
+                return true;
+            }
+
+            System.out.println("Book is already available or does not exist.");
+            return false;
+
+        } catch (SQLException e) {
+
+            System.out.println("Failed to return book.");
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // =========================
+    // DELETE BOOK
+    // =========================
 
     public void deleteBook(int bookId) {
 
