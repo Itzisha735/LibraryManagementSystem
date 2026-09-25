@@ -16,6 +16,8 @@ import java.util.List;
 @WebServlet("/books")
 public class BookServlet extends HttpServlet {
 
+    private final BookDAO bookDAO = new BookDAO();
+
     @Override
     protected void doGet(
             HttpServletRequest request,
@@ -26,18 +28,39 @@ public class BookServlet extends HttpServlet {
 
         PrintWriter out = response.getWriter();
 
-        BookDAO bookDAO = new BookDAO();
-
         List<Book> books = bookDAO.getAllBooks();
 
         out.println("<html>");
         out.println("<head>");
-        out.println("<title>Library Books</title>");
+        out.println("<title>University Library Management System</title>");
         out.println("</head>");
 
         out.println("<body>");
 
         out.println("<h1>University Library Management System</h1>");
+
+        // Add Book form
+        out.println("<h2>Add New Book</h2>");
+
+        out.println("<form method='post' action='books'>");
+
+        out.println("Book ID: ");
+        out.println("<input type='number' name='bookId' required>");
+        out.println("<br><br>");
+
+        out.println("Title: ");
+        out.println("<input type='text' name='title' required>");
+        out.println("<br><br>");
+
+        out.println("Author: ");
+        out.println("<input type='text' name='author' required>");
+        out.println("<br><br>");
+
+        out.println("<input type='submit' value='Add Book'>");
+
+        out.println("</form>");
+
+        // Books list
         out.println("<h2>Available Books</h2>");
 
         if (books.isEmpty()) {
@@ -72,5 +95,22 @@ public class BookServlet extends HttpServlet {
 
         out.println("</body>");
         out.println("</html>");
+    }
+
+    @Override
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws ServletException, IOException {
+
+        int bookId = Integer.parseInt(request.getParameter("bookId"));
+        String title = request.getParameter("title");
+        String author = request.getParameter("author");
+
+        Book book = new Book(bookId, title, author);
+
+        bookDAO.addBook(book);
+
+        response.sendRedirect("books");
     }
 }
