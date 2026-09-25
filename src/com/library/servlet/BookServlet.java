@@ -39,7 +39,10 @@ public class BookServlet extends HttpServlet {
 
         out.println("<h1>University Library Management System</h1>");
 
-        // Add Book form
+        // =========================
+        // ADD BOOK FORM
+        // =========================
+
         out.println("<h2>Add New Book</h2>");
 
         out.println("<form method='post' action='books'>");
@@ -60,7 +63,10 @@ public class BookServlet extends HttpServlet {
 
         out.println("</form>");
 
-        // Books list
+        // =========================
+        // BOOK LIST
+        // =========================
+
         out.println("<h2>Available Books</h2>");
 
         if (books.isEmpty()) {
@@ -76,6 +82,7 @@ public class BookServlet extends HttpServlet {
             out.println("<th>Title</th>");
             out.println("<th>Author</th>");
             out.println("<th>Available</th>");
+            out.println("<th>Action</th>");
             out.println("</tr>");
 
             for (Book book : books) {
@@ -86,6 +93,25 @@ public class BookServlet extends HttpServlet {
                 out.println("<td>" + book.getTitle() + "</td>");
                 out.println("<td>" + book.getAuthor() + "</td>");
                 out.println("<td>" + book.isAvailable() + "</td>");
+
+                // Delete button
+                out.println("<td>");
+                out.println("<form method='post' action='books'>");
+
+                out.println(
+                    "<input type='hidden' name='action' value='delete'>"
+                );
+
+                out.println(
+                    "<input type='hidden' name='bookId' value='"
+                    + book.getBookId()
+                    + "'>"
+                );
+
+                out.println("<input type='submit' value='Delete'>");
+
+                out.println("</form>");
+                out.println("</td>");
 
                 out.println("</tr>");
             }
@@ -103,7 +129,33 @@ public class BookServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        int bookId = Integer.parseInt(request.getParameter("bookId"));
+        String action = request.getParameter("action");
+
+        // =========================
+        // DELETE BOOK
+        // =========================
+
+        if ("delete".equals(action)) {
+
+            int bookId = Integer.parseInt(
+                    request.getParameter("bookId")
+            );
+
+            bookDAO.deleteBook(bookId);
+
+            response.sendRedirect("books");
+
+            return;
+        }
+
+        // =========================
+        // ADD BOOK
+        // =========================
+
+        int bookId = Integer.parseInt(
+                request.getParameter("bookId")
+        );
+
         String title = request.getParameter("title");
         String author = request.getParameter("author");
 
