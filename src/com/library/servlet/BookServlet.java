@@ -24,7 +24,7 @@ public class BookServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("text/html");
+        response.setContentType("text/html;charset=UTF-8");
 
         PrintWriter out = response.getWriter();
 
@@ -38,49 +38,77 @@ public class BookServlet extends HttpServlet {
             books = bookDAO.getAllBooks();
         }
 
+        out.println("<!DOCTYPE html>");
         out.println("<html>");
         out.println("<head>");
+        out.println("<meta charset='UTF-8'>");
+        out.println("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
         out.println("<title>University Library Management System</title>");
+        out.println("<link rel='stylesheet' href='css/style.css'>");
         out.println("</head>");
 
         out.println("<body>");
 
+        out.println("<div class='container'>");
+
+        // =========================
+        // HEADER
+        // =========================
+
         out.println("<h1>University Library Management System</h1>");
 
         // =========================
-        // ADD BOOK FORM
+        // ADD BOOK
         // =========================
+
+        out.println("<div class='card'>");
 
         out.println("<h2>Add New Book</h2>");
 
         out.println("<form method='post' action='books'>");
 
-        out.println("Book ID: ");
-        out.println("<input type='number' name='bookId' required>");
-        out.println("<br><br>");
+        out.println("<div class='form-group'>");
+        out.println("<label for='bookId'>Book ID</label>");
+        out.println("<input type='number' id='bookId' name='bookId' required>");
+        out.println("</div>");
 
-        out.println("Title: ");
-        out.println("<input type='text' name='title' required>");
-        out.println("<br><br>");
+        out.println("<div class='form-group'>");
+        out.println("<label for='title'>Title</label>");
+        out.println("<input type='text' id='title' name='title' required>");
+        out.println("</div>");
 
-        out.println("Author: ");
-        out.println("<input type='text' name='author' required>");
-        out.println("<br><br>");
+        out.println("<div class='form-group'>");
+        out.println("<label for='author'>Author</label>");
+        out.println("<input type='text' id='author' name='author' required>");
+        out.println("</div>");
 
         out.println("<input type='submit' value='Add Book'>");
 
         out.println("</form>");
 
+        out.println("</div>");
+
         // =========================
         // SEARCH BOOKS
         // =========================
+
+        out.println("<div class='card'>");
 
         out.println("<h2>Search Books</h2>");
 
         out.println("<form method='get' action='books'>");
 
-        out.println("Keyword: ");
-        out.println("<input type='text' name='keyword' required>");
+        out.println("<div class='form-group'>");
+        out.println("<label for='keyword'>Search by title or author</label>");
+
+        out.println(
+            "<input type='text' id='keyword' name='keyword' "
+            + "value='"
+            + escapeHtml(keyword)
+            + "'>"
+        );
+
+        out.println("</div>");
 
         out.println("<input type='submit' value='Search'>");
 
@@ -88,32 +116,40 @@ public class BookServlet extends HttpServlet {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
 
-            out.println("<p>Search results for: <strong>"
-                    + keyword
-                    + "</strong></p>");
+            out.println(
+                "<p>Search results for: <strong>"
+                + escapeHtml(keyword)
+                + "</strong></p>"
+            );
 
             out.println("<p><a href='books'>Show All Books</a></p>");
         }
+
+        out.println("</div>");
 
         // =========================
         // BOOK LIST
         // =========================
 
-        out.println("<h2>Available Books</h2>");
+        out.println("<div class='card'>");
+
+        out.println("<h2>Books</h2>");
 
         if (books.isEmpty()) {
 
-            out.println("<p>No books found.</p>");
+            out.println(
+                "<p class='empty-message'>No books found.</p>"
+            );
 
         } else {
 
-            out.println("<table border='1'>");
+            out.println("<table>");
 
             out.println("<tr>");
             out.println("<th>Book ID</th>");
             out.println("<th>Title</th>");
             out.println("<th>Author</th>");
-            out.println("<th>Available</th>");
+            out.println("<th>Status</th>");
             out.println("<th>Action</th>");
             out.println("</tr>");
 
@@ -122,50 +158,86 @@ public class BookServlet extends HttpServlet {
                 out.println("<tr>");
 
                 out.println("<td>" + book.getBookId() + "</td>");
-                out.println("<td>" + book.getTitle() + "</td>");
-                out.println("<td>" + book.getAuthor() + "</td>");
-                out.println("<td>" + book.isAvailable() + "</td>");
+
+                out.println(
+                    "<td>"
+                    + escapeHtml(book.getTitle())
+                    + "</td>"
+                );
+
+                out.println(
+                    "<td>"
+                    + escapeHtml(book.getAuthor())
+                    + "</td>"
+                );
 
                 // =========================
-                // ACTION BUTTONS
+                // STATUS
+                // =========================
+
+                if (book.isAvailable()) {
+
+                    out.println(
+                        "<td class='status-available'>Available</td>"
+                    );
+
+                } else {
+
+                    out.println(
+                        "<td class='status-borrowed'>Borrowed</td>"
+                    );
+                }
+
+                // =========================
+                // ACTIONS
                 // =========================
 
                 out.println("<td>");
 
-                // Borrow / Return button
-                out.println("<form method='post' action='books'>");
-
-                out.println(
-                    "<input type='hidden' name='bookId' value='"
-                    + book.getBookId()
-                    + "'>"
-                );
-
                 if (book.isAvailable()) {
+
+                    out.println("<form method='post' action='books' class='action-form'>");
 
                     out.println(
                         "<input type='hidden' name='action' value='borrow'>"
                     );
 
                     out.println(
+                        "<input type='hidden' name='bookId' value='"
+                        + book.getBookId()
+                        + "'>"
+                    );
+
+                    out.println(
                         "<input type='submit' value='Borrow'>"
                     );
 
+                    out.println("</form>");
+
                 } else {
+
+                    out.println("<form method='post' action='books' class='action-form'>");
 
                     out.println(
                         "<input type='hidden' name='action' value='return'>"
                     );
 
                     out.println(
+                        "<input type='hidden' name='bookId' value='"
+                        + book.getBookId()
+                        + "'>"
+                    );
+
+                    out.println(
                         "<input type='submit' value='Return'>"
                     );
+
+                    out.println("</form>");
                 }
 
-                out.println("</form>");
-
                 // Delete button
-                out.println("<form method='post' action='books'>");
+
+                out.println("<form method='post' action='books' class='action-form'>");
 
                 out.println(
                     "<input type='hidden' name='action' value='delete'>"
@@ -191,6 +263,10 @@ public class BookServlet extends HttpServlet {
             out.println("</table>");
         }
 
+        out.println("</div>");
+
+        out.println("</div>");
+
         out.println("</body>");
         out.println("</html>");
     }
@@ -203,15 +279,28 @@ public class BookServlet extends HttpServlet {
 
         String action = request.getParameter("action");
 
+        int bookId = Integer.parseInt(
+                request.getParameter("bookId")
+        );
+
         // =========================
-        // BORROW BOOK
+        // DELETE
+        // =========================
+
+        if ("delete".equals(action)) {
+
+            bookDAO.deleteBook(bookId);
+
+            response.sendRedirect("books");
+
+            return;
+        }
+
+        // =========================
+        // BORROW
         // =========================
 
         if ("borrow".equals(action)) {
-
-            int bookId = Integer.parseInt(
-                    request.getParameter("bookId")
-            );
 
             bookDAO.borrowBook(bookId);
 
@@ -221,33 +310,12 @@ public class BookServlet extends HttpServlet {
         }
 
         // =========================
-        // RETURN BOOK
+        // RETURN
         // =========================
 
         if ("return".equals(action)) {
 
-            int bookId = Integer.parseInt(
-                    request.getParameter("bookId")
-            );
-
             bookDAO.returnBook(bookId);
-
-            response.sendRedirect("books");
-
-            return;
-        }
-
-        // =========================
-        // DELETE BOOK
-        // =========================
-
-        if ("delete".equals(action)) {
-
-            int bookId = Integer.parseInt(
-                    request.getParameter("bookId")
-            );
-
-            bookDAO.deleteBook(bookId);
 
             response.sendRedirect("books");
 
@@ -258,10 +326,6 @@ public class BookServlet extends HttpServlet {
         // ADD BOOK
         // =========================
 
-        int bookId = Integer.parseInt(
-                request.getParameter("bookId")
-        );
-
         String title = request.getParameter("title");
         String author = request.getParameter("author");
 
@@ -270,5 +334,23 @@ public class BookServlet extends HttpServlet {
         bookDAO.addBook(book);
 
         response.sendRedirect("books");
+    }
+
+    // =========================
+    // HTML ESCAPING
+    // =========================
+
+    private String escapeHtml(String value) {
+
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 }
